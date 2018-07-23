@@ -21,6 +21,8 @@ class UrlManager(object):
 		try:
 			with open(path,'wb') as f:
 				cPickle.dump(data, path)
+		except:
+			print '%s save processing_status error'%path
 	def new_urls_size(self):
 		return len(self.new_urls)
 
