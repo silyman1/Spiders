@@ -36,8 +36,8 @@ class UrlManager(object):
 		new_url=self.new_urls.pop()
 		m = hashlib.md5()
 		m.update(new_url)
-		self.crawled_urls.add(m.hexdigest()[8,-8])
-		print 'get new url %s'%new_url
+		self.crawled_urls.add(m.hexdigest()[8:-8])
+		#print 'get new url %s'%new_url
 		return new_url
 
 	def add_new_url(self,url):
@@ -45,13 +45,14 @@ class UrlManager(object):
 			print u'add empty url.......'
 			return 
 		m = hashlib.md5()
-		m.update(new_url)
-		if url in self.new_urls or m.hexdigest()[8,-8] in self.crawled_urls:
+		m.update(url)
+
+		if url in self.new_urls or m.hexdigest()[8:-8] in self.crawled_urls:
 			print u'%s is a repeating url'%url
 			return
 		else:
 			self.new_urls.add(url)
-			print 'adding new url %s'%url
+			#print 'adding new url %s'%url
 	def add_new_urls(self,urls):
 		if urls is None or len(urls)==0:
 			print u'add empty urls.......'

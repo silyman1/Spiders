@@ -15,6 +15,7 @@ class HtmlDownloader(object):
 		print r.status_code
 		if r.status_code == 200:
 			r.encoding = chardet.detect(r.content)['encoding']
+			print r.encoding
 			return r.text
 		else:
 			r.raise_for_status( )

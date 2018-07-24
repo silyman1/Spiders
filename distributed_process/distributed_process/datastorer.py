@@ -10,7 +10,10 @@ class DataStorer(object):
 	'''
 	def __init__(self):
 		self.datas = []
-		self.filepath = "baike-%s"%self.gettime()
+		self.filepath='baike_%s.html'%(time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime()) )
+		self.output_head()
+		self.table_name = u'crawling_results'
+		self.db,self.cur = self.db_init()
 	def gettime(self):
 		return time.strftime('[%Y-%m-%d %H:%M:%S]', time.localtime(time.time()))
 
@@ -19,6 +22,10 @@ class DataStorer(object):
 			print 'nothing to store.....'
 			return
 		self.datas.append(data)
+		if len(self.datas)>=10:
+			self.output_html()
+			self.output_db()
+			self.datas = []
 	def output_head(self):
 		with open(self.filepath,'w+') as f:
 			f.write("<html>")
@@ -45,42 +52,47 @@ class DataStorer(object):
 		with open(self.filepath,'w+') as f:
 			f.write("</body>")
 			f.write("</html>")
-	def output_db(self):
-		table_name = u'crawling_results'
+		self.db.close()
+	def db_init(self):
 		print self.gettime(),'connecting to db...'
 		try:
 			db = MySQLdb.connect(host="localhost",user="root",passwd="pzc",db="test",charset='utf8')
 			cursor = db.cursor()
 		except MySQLdb.Error,e:
 			print self.gettime(),'failed to connect database...reason:',e
-			
+		cursor.execute('DROP TABLE IF EXISTS %s'%self.table_name)
+		return db,cursor
+	def output_db(self):
 		print self.gettime(),'creating table...'
-		cursor.execute('DROP TABLE IF EXISTS %s'%table_name)
-		sql = """CREATE TABLE %s(
+		sql = """CREATE TABLE IF NOT EXISTS %s(
 			`id` int PRIMARY KEY AUTO_INCREMENT,
 			`title` TEXT,
 			`url` VARCHAR(255),
-			`description` TEXT)DEFAULT CHARSET=utf8;"""%table_name
+			`description` TEXT)DEFAULT CHARSET=utf8;"""%self.table_name
 		try:
-			cursor.execute(sql)
+			self.cur.execute(sql)
 		except MySQLdb.Error,e:
 			print self.gettime(),'creating table failed...reason:',e
 
 		print self.gettime(),'insert data...'
 		for data in self.datas:
-			db.set_character_set('utf8')
+			self.db.set_character_set('utf8')
  			title = MySQLdb.escape_string(data['title'])
  			url = MySQLdb.escape_string(data['url'])
  			description = MySQLdb.escape_string(data['description'])
-			sql2 = "INSERT INTO %s(title,url,description)VALUES ('%s','%s','%s')"%(table_name,title,url,description)
+			sql2 = "INSERT INTO %s(title,url,description)VALUES ('%s','%s','%s')"%(self.table_name,title,url,description)
 			try:
-				result = cursor.execute(sql2)
+				result = self.cur.execute(sql2)
 				if result:
-					print 'insert NO.%d data'%db.insert_id()
+					print 'insert NO.%d data'%self.db.insert_id()
 				else:
 					print 'rolling back..................'
-					db.rollback()
-				db.commit()
+					self.db.rollback()
+				self.db.commit()
+				# if self.db.insert_id()>=200:
+				# 	return 'stop'
+				# else:
+				# 	return 'continue'
 			except MySQLdb.Error,e:
 				print self.gettime(),'insert data error...reason:',e
 		# f =open('test.log','w+')
@@ -94,5 +106,4 @@ class DataStorer(object):
 		# 	print results[2]
 		# 	print results[3]
 		# 	print '======================================='
-		db.close()
-
+		
