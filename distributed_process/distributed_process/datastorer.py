@@ -27,7 +27,7 @@ class DataStorer(object):
 			self.output_db()
 			self.datas = []
 	def output_head(self):
-		with open(self.filepath,'w+') as f:
+		with open(self.filepath,'a+') as f:
 			f.write("<html>")
 			f.write("<head>")
 			f.write('<meta charset="UTF-8">')
@@ -38,7 +38,7 @@ class DataStorer(object):
 			f.write("<body>")
 	def output_html(self):
 
-		with open(self.filepath,'a') as f:
+		with open(self.filepath,'a+') as f:
 
 			for data in self.datas:
 				f.write("<h3>")
@@ -49,7 +49,7 @@ class DataStorer(object):
 				f.write("</tr>")
 
 	def output_end(self):
-		with open(self.filepath,'w+') as f:
+		with open(self.filepath,'a+') as f:
 			f.write("</body>")
 			f.write("</html>")
 		self.db.close()
@@ -60,7 +60,7 @@ class DataStorer(object):
 			cursor = db.cursor()
 		except MySQLdb.Error,e:
 			print self.gettime(),'failed to connect database...reason:',e
-		cursor.execute('DROP TABLE IF EXISTS %s'%self.table_name)
+		# cursor.execute('DROP TABLE IF EXISTS %s'%self.table_name)  调试时使用
 		return db,cursor
 	def output_db(self):
 		print self.gettime(),'creating table...'
@@ -95,15 +95,5 @@ class DataStorer(object):
 				# 	return 'continue'
 			except MySQLdb.Error,e:
 				print self.gettime(),'insert data error...reason:',e
-		# f =open('test.log','w+')
-		# sys.stdout = f
-		# for i in range(1,2):
-		# 	sql = "SELECT * FROM %s WHERE `id` = '%d'" %(table_name,i)
 
-		# 	cursor.execute(sql)
-		# 	results = cursor.fetchone()
-		# 	print i,results[1]
-		# 	print results[2]
-		# 	print results[3]
-		# 	print '======================================='
 		
